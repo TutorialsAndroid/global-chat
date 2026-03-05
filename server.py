@@ -2,8 +2,23 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from typing import List
 import uvicorn
 import json
+import sqlite3
 
 app = FastAPI()
+
+conn = sqlite3.connect("chat.db", check_same_thread=False)
+cursor = conn.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    text TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+)
+""")
+
+conn.commit()
 
 
 class ConnectionManager:
@@ -32,6 +47,18 @@ async def websocket_endpoint(websocket: WebSocket):
 
     await manager.connect(websocket)
 
+    cursor.execute(
+        "SELECT name, text FROM messages ORDER BY id DESC LIMIT 50"
+    )
+
+    rows = cursor.fetchall()
+
+    for name, text in reversed(rows):
+        await websocket.send_text(json.dumps({
+            "name": name,
+            "text": text
+        }))
+
     try:
 
         while True:
@@ -39,6 +66,16 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
 
             message = json.loads(data)
+
+            name = message.get("name")
+            text = message.get("text")
+
+            cursor.execute(
+                "INSERT INTO messages (name, text) VALUES (?, ?)",
+                (name, text)
+            )
+
+            conn.commit()
 
             await manager.broadcast(json.dumps(message))
 
