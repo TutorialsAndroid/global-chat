@@ -54,10 +54,15 @@ async def websocket_endpoint(websocket: WebSocket):
     rows = cursor.fetchall()
 
     for name, text in reversed(rows):
-        await websocket.send_text(json.dumps({
-            "name": name,
-            "text": text
-        }))
+    await websocket.send_text(json.dumps({
+        "name": name,
+        "text": text
+    }))
+
+    # tell client history is finished
+    await websocket.send_text(json.dumps({
+        "type": "history_end"
+    }))
 
     try:
 
