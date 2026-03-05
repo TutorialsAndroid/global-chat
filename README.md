@@ -13,7 +13,7 @@ You can download the Windows desktop chat client here:
 
 ## ⬇ Download Installer
 
-[![Download](https://img.shields.io/badge/Download-Global%20Chat%20Installer-blue?style=for-the-badge)](https://github.com/TutorialsAndroid/global-chat/releases/download/v1.0.0/GlobalChatInstaller.exe)
+[![Download](https://img.shields.io/badge/Download-Global%20Chat%20Installer-blue?style=for-the-badge)](https://github.com/TutorialsAndroid/global-chat/releases)
 
 Download the latest version and run the installer to start chatting.
 
