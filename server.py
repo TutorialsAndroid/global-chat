@@ -67,9 +67,11 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
 
         while True:
+            data = await websocket.receive_text()
+
+            message = json.loads(data)
             
             msg_type = message.get("type")
-
             if msg_type == "delete":
                 msg_id = message.get("id")
 
@@ -81,10 +83,6 @@ async def websocket_endpoint(websocket: WebSocket):
                     "id": msg_id
                 }))
                 continue
-
-            data = await websocket.receive_text()
-
-            message = json.loads(data)
 
             name = message.get("name")
             text = message.get("text")
