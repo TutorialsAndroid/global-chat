@@ -67,6 +67,20 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
 
         while True:
+            
+            msg_type = message.get("type")
+
+            if msg_type == "delete":
+                msg_id = message.get("id")
+
+                cursor.execute("DELETE FROM messages WHERE id=?", (msg_id,))
+                conn.commit()
+
+                await manager.broadcast(json.dumps({
+                    "type": "delete",
+                    "id": msg_id
+                }))
+                continue
 
             data = await websocket.receive_text()
 
