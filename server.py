@@ -11,7 +11,7 @@ cursor = conn.cursor()
 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY,
     name TEXT,
     text TEXT,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -48,13 +48,14 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
 
     cursor.execute(
-        "SELECT name, text FROM messages ORDER BY id DESC LIMIT 50"
+        "SELECT id, name, text FROM messages ORDER BY id DESC LIMIT 50"
     )
 
     rows = cursor.fetchall()
 
-    for name, text in reversed(rows):
+    for msg_id, name, text in reversed(rows):
         await websocket.send_text(json.dumps({
+            "id": msg_id,
             "name": name,
             "text": text
         }))
@@ -84,12 +85,13 @@ async def websocket_endpoint(websocket: WebSocket):
                 }))
                 continue
 
+            msg_id = message.get("id")
             name = message.get("name")
             text = message.get("text")
 
             cursor.execute(
-                "INSERT INTO messages (name, text) VALUES (?, ?)",
-                (name, text)
+                "INSERT INTO messages (id, name, text) VALUES (?, ?, ?)",
+                (msg_id, name, text)
             )
 
             conn.commit()
